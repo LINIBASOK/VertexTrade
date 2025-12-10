@@ -13,7 +13,9 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/sales")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"})
+@CrossOrigin(origins="https://vertex-trade.vercel.app")
+
+// @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"})
 public class SaleController {
 
     private final SaleService saleService;

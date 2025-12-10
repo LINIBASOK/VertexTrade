@@ -43,7 +43,7 @@ export default function SalesReport() {
       setReport(data);
     } catch (err) {
       setError(
-        'Failed to load report. Make sure the backend is running on http://localhost:8080'
+        'Failed to load report. Make sure the backend is running on  https://vertextrade.fly.dev'
       );
       console.error('Error loading report:', err);
     } finally {
