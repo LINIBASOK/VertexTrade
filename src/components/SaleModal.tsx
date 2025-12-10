@@ -72,10 +72,29 @@ export default function SaleModal({ products, onSave, onClose }: SaleModalProps)
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <label htmlFor="productId">Product *</label>
-            <select id="productId" name="productId" value={formData.productId} onChange={handleInputChange} className={errors.productId ? 'error' : ''}>
-              <option value={0}>Select a product</option>
-              {products.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price.toFixed(2)})</option>)}
-            </select>
+           <select
+  id="productName"
+  name="product"
+  value={formData.product.name} 
+  onChange={(e) => {
+    const selectedProduct = products.find(p => p.name === e.target.value);
+    if (selectedProduct) {
+      setFormData(prev => ({
+        ...prev,
+        product: selectedProduct 
+      }));
+    }
+  }}
+  className={errors.productId ? 'error' : ''}
+>
+  <option value="">Select a product</option>
+  {products.map(p => (
+    <option key={p.id} value={p.name}>
+      {p.name} (${p.price.toFixed(2)})
+    </option>
+  ))}
+</select>
+
             {errors.productId && <span className="error-message">{errors.productId}</span>}
           </div>
 

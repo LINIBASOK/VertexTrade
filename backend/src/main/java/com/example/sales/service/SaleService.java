@@ -32,43 +32,47 @@ public class SaleService {
         return saleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sale not found with id: " + id));
     }
+@Transactional
+public Sale createSale(Sale sale) {
 
-    @Transactional
-    public Sale createSale(Sale sale) {
-      
-        if (sale.getProduct() == null || sale.getProduct().getId() == null)
-            throw new IllegalArgumentException("Product is required");
-        if (sale.getQuantity() == null || sale.getQuantity() <= 0)
-            throw new IllegalArgumentException("Quantity must be > 0");
-        if (sale.getDate() == null)
-            throw new IllegalArgumentException("Sale date is required");
+    if (sale.getProduct() == null || sale.getProduct().getName() == null || sale.getProduct().getName().isEmpty())
+        throw new IllegalArgumentException("Product name is required");
 
-     
-        LocalDate normalizedDate = sale.getDate();
-        sale.setDate(normalizedDate);
+    if (sale.getQuantity() == null || sale.getQuantity() <= 0)
+        throw new IllegalArgumentException("Quantity must be > 0");
 
-        Product product = productService.getProductById(sale.getProduct().getId());
-        if (product.getQuantity() < sale.getQuantity())
-            throw new IllegalArgumentException("Not enough stock");
+    if (sale.getDate() == null)
+        throw new IllegalArgumentException("Sale date is required");
 
-        product.setQuantity(product.getQuantity() - sale.getQuantity());
-        productService.updateProduct(product.getId(), product);
+    LocalDate normalizedDate = sale.getDate();
+    sale.setDate(normalizedDate);
 
-        double totalAmount = sale.getQuantity() * product.getPrice();
-        sale.setTotalAmount(totalAmount);
-        sale.setProduct(product); 
+    // Fetch product by name (only active products)
+    Product product = productService.getProductByName(sale.getProduct().getName());
 
-       
-        Sale existingSale = saleRepository.findByProductAndDate(product, normalizedDate);
-        if (existingSale != null) {
-            existingSale.setQuantity(existingSale.getQuantity() + sale.getQuantity());
-            existingSale.setTotalAmount(existingSale.getQuantity() * product.getPrice());
-            return saleRepository.save(existingSale);
-        }
+    if (product.getQuantity() < sale.getQuantity())
+        throw new IllegalArgumentException("Not enough stock");
 
-       
-        return saleRepository.save(sale);
+    // Reduce stock
+    product.setQuantity(product.getQuantity() - sale.getQuantity());
+    productService.updateProduct(product.getId(), product);
+
+    // Set sale amount
+    double totalAmount = sale.getQuantity() * product.getPrice();
+    sale.setTotalAmount(totalAmount);
+    sale.setProduct(product); // attach managed entity
+
+    // Check for existing sale by product name and date
+    Sale existingSale = saleRepository.findByProductNameAndDate(product.getName(), normalizedDate);
+    if (existingSale != null) {
+        existingSale.setQuantity(existingSale.getQuantity() + sale.getQuantity());
+        existingSale.setTotalAmount(existingSale.getQuantity() * product.getPrice());
+        return saleRepository.save(existingSale);
     }
+
+    return saleRepository.save(sale);
+}
+
 
     public Page<Sale> getPaginatedSales(int page, int size, String sortBy, String search, String direction) {
         if (page < 0) page = 0;

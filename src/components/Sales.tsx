@@ -84,8 +84,8 @@ export default function Sales({ search = '' }: SalesProps) {
         <SaleModal
           products={products}
           onClose={() => setShowModal(false)}
-          onSave={async (sale) => { 
-            await saleService.add(sale); 
+          onSave={async (sale :Partial<Sale>) => { 
+            await saleService.add( sale ); 
             setShowModal(false);
             tableRef.current?.reload();  
           }}

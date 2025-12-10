@@ -65,6 +65,13 @@ public class ProductService {
         }
     }
 
+    
+    public Product getProductByName(String name) {
+    return productRepository.findByNameIgnoreCaseAndActiveTrue(name)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found with name: " + name));
+}
+
+
     public Page<Product> getPaginatedProducts(int page, int size, String search, String sortBy, String direction) {
         if (page < 0) page = 0;
         if (size <= 0) size = 10;
