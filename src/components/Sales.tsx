@@ -65,9 +65,7 @@ export default function Sales({ search = '' }: SalesProps) {
         fetchData={async (page, pageSize) => {
           try {
             const res = await saleService.getPaginated(page, pageSize, search);
-            console.log("📥 Sales → Backend Response:", res);
-
-            // Handle nested product response
+        
             const salesArray = Array.isArray(res) ? res : res.data || [];
 
             return {

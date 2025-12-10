@@ -34,9 +34,9 @@ public class JwtFilter extends OncePerRequestFilter {
             username = jwtUtil.getUsernameFromToken(token);
         }
 
-        // Simple authentication without CustomUserDetailsService
+        
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // You can create a simple Authentication object with no authorities for now
+           
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     username, null, Collections.emptyList()
             );
