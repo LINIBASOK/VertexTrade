@@ -83,8 +83,11 @@ export default function Products({ search = "" }: ProductsProps) {
         fetchData={async (page, pageSize) => {
           
           const res = await productService.getPaginated(page, pageSize, search);
-          const activeProducts = res.data.filter((p: Product) => p.active !== false);
-          return { data: activeProducts, total: activeProducts.length };
+          const activeProducts = res.data?.filter((p: Product) => p.active !== false);
+          
+          return { data: activeProducts, 
+            total : res.total || 0
+          };
         }}
         initialPageSize={10}
       />
