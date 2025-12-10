@@ -64,7 +64,7 @@ public class ProductController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String direction
     ) {
-        Page<Product> products = productService.getPaginatedProducts(page, size, search, sortBy, direction);
+        Page<Product> products = productService.getPaginatedProducts(page, size, search, direction);
         return ResponseEntity.ok(products);
     }
 }

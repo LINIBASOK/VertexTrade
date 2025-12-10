@@ -13,6 +13,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByNameContainingIgnoreCaseAndActiveTrue(String name, Pageable pageable);
 
     List<Product> findByActiveTrue(); 
+   Page<Product> findByActiveTrue(Pageable pageable);
 
     Optional<Product> findByNameIgnoreCaseAndActiveTrue(String name);
 }

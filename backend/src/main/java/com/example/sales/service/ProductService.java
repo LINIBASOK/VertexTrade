@@ -65,25 +65,22 @@ public class ProductService {
         }
     }
 
-    
+
     public Product getProductByName(String name) {
     return productRepository.findByNameIgnoreCaseAndActiveTrue(name)
             .orElseThrow(() -> new ResourceNotFoundException("Product not found with name: " + name));
 }
 
+    public Page<Product> getPaginatedProducts(int page, int size, String sortBy, String direction) {
+    if (page < 0) page = 0;
+    if (size <= 0) size = 10;
+    if (sortBy == null || sortBy.isBlank()) sortBy = "id";
 
-    public Page<Product> getPaginatedProducts(int page, int size, String search, String sortBy, String direction) {
-        if (page < 0) page = 0;
-        if (size <= 0) size = 10;
-        if (sortBy == null || sortBy.isBlank()) sortBy = "id";
+    Sort sort = Sort.by(Sort.Direction.fromString(direction == null ? "ASC" : direction.toUpperCase()), sortBy);
+    Pageable pageable = PageRequest.of(page, size, sort);
 
-        Sort sort = Sort.by(Sort.Direction.fromString(direction == null ? "ASC" : direction.toUpperCase()), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
+    
+    return productRepository.findByActiveTrue(pageable);
+}
 
-        if (search == null || search.trim().isEmpty()) {
-            return productRepository.findAll(pageable);
-        } else {
-            return productRepository.findByNameContainingIgnoreCaseAndActiveTrue(search.trim(), pageable);
-        }
-    }
 }
