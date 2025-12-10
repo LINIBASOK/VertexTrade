@@ -21,23 +21,25 @@ public class SalesReportController {
         this.salesReportService = salesReportService;
     }
 
+    // Dashboard summary
     @GetMapping("/summary")
     public ResponseEntity<SalesReportDto> getSalesSummary() {
-        SalesReportDto report = salesReportService.getSalesSummary();
+        SalesReportDto report = salesReportService.getSalesSummaryWithCharts();
         return ResponseEntity.ok(report);
     }
 
-    @GetMapping("/csv")
-    public ResponseEntity<byte[]> downloadCSV() throws IOException {
-        byte[] csvData = salesReportService.generateCSVReport();
+    // Download Excel report
+    @GetMapping("/excel")
+    public ResponseEntity<byte[]> downloadExcel() throws IOException {
+        byte[] excelData = salesReportService.generateExcelReport();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(org.springframework.http.MediaType.parseMediaType("text/csv"));
+        headers.setContentType(org.springframework.http.MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
         headers.setContentDisposition(ContentDisposition.builder("attachment")
-                .filename("sales-report.csv")
+                .filename("sales-report.xlsx")
                 .build());
 
-        return new ResponseEntity<>(csvData, headers, HttpStatus.OK);
+        return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
     }
-
 }

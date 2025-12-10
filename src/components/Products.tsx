@@ -1,34 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Product } from '../types';
-import { productService } from '../services/api';
-import ProductModal from './ProductModal';
-import '../styles/products.scss';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
 
-export default function Products() {
-  const [products, setProducts] = useState<Product[]>([]);
+import { useRef, useState, useEffect } from "react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
+import { Product } from "../types";
+import ProductModal from "./ProductModal";
+import DataTable, { DataTableRef } from "./DataTable";
+import { productService } from "../services/api";
+import "../styles/products.scss";
+
+interface ProductsProps {
+  search?: string;
+}
+
+export default function Products({ search = "" }: ProductsProps) {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await productService.getAll();
-      setProducts(data);
-    } catch (err) {
-      setError('Failed to load products. Make sure the backend is running on http://localhost:8080');
-      console.error('Error loading products:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const tableRef = useRef<DataTableRef>(null);
 
   const handleAddClick = () => {
     setEditingProduct(null);
@@ -40,110 +26,85 @@ export default function Products() {
     setShowModal(true);
   };
 
-  const handleSave = async (product: Product) => {
-    try {
-      if (editingProduct && product.id) {
-        await productService.update(product.id, product);
-      } else {
-        await productService.add(product);
-      }
-      await loadProducts();
-      setShowModal(false);
-      setEditingProduct(null);
-    } catch (err) {
-      setError('Failed to save product');
-      console.error('Error saving product:', err);
-    }
-  };
-
-  const handleDelete = async (id: number | undefined) => {
+  const handleDelete = async (id?: number) => {
     if (!id) return;
+    if (!window.confirm("Delete product?")) return;
 
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await productService.delete(id);
-        await loadProducts();
-      } catch (err) {
-        setError('Failed to delete product');
-        console.error('Error deleting product:', err);
-      }
+    try {
+      await productService.delete(id);
+      tableRef.current?.reload();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to delete product");
     }
   };
+
+  const columns = [
+    { key: "sno", label: "S.No" },
+    { key: "name", label: "Name" },
+    {
+      key: "price",
+      label: "Price",
+      render: (p: Product) => `$${p.price.toFixed(2)}`,
+    },
+    { key: "quantity", label: "Quantity" },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (p: Product) => (
+        <>
+          <button className="edit-delete edit" onClick={() => handleEditClick(p)}>
+            <Edit2 size={18} />
+          </button>
+          <button className="edit-delete delete" onClick={() => handleDelete(p.id)}>
+            <Trash2 size={18} />
+          </button>
+        </>
+      ),
+    },
+  ];
+
+  useEffect(() => {
+    tableRef.current?.reload();
+  }, [search]);
 
   return (
     <div className="products-container">
       <div className="products-header">
         <h2>Products</h2>
         <button className="btn-primary" onClick={handleAddClick}>
-          <Plus size={20} />
-          Add Product
+          <Plus size={20} /> Add Product
         </button>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
-
-      {isLoading ? (
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading products...</p>
-        </div>
-      ) : products.length === 0 ? (
-        <div className="empty-state">
-          <p>No products found</p>
-          <p className="empty-text">Click "Add Product" to get started</p>
-        </div>
-      ) : (
-        <div className="table-wrapper">
-          <table className="products-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id}>
-                  <td>{product.id}</td>
-                  <td className="name-cell">{product.name}</td>
-                  <td>${product.price.toFixed(2)}</td>
-                  <td>{product.quantity}</td>
-                  <td className="actions-cell">
-                    <button
-                      className="btn-icon btn-edit"
-                      onClick={() => handleEditClick(product)}
-                      title="Edit"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                    <button
-                      className="btn-icon btn-delete"
-                      onClick={() => handleDelete(product.id)}
-                      title="Delete"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        ref={tableRef}
+        columns={columns}
+        fetchData={async (page, pageSize) => {
+          
+          const res = await productService.getPaginated(page, pageSize, search);
+          const activeProducts = res.data.filter((p: Product) => p.active !== false);
+          return { data: activeProducts, total: activeProducts.length };
+        }}
+        initialPageSize={10}
+      />
 
       {showModal && (
         <ProductModal
           product={editingProduct}
-          onSave={handleSave}
-          onClose={() => {
+          onClose={() => setShowModal(false)}
+          onSave={async (data) => {
+            if ("id" in data) {
+              await productService.update(data.id, data as Product);
+            } else {
+              await productService.add(data as Omit<Product, "id">);
+            }
             setShowModal(false);
-            setEditingProduct(null);
+            tableRef.current?.reload();
           }}
         />
       )}
     </div>
   );
 }
+

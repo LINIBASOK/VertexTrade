@@ -1,3 +1,4 @@
+
 package com.example.sales.controller;
 
 import com.example.sales.entity.Product;
@@ -5,7 +6,7 @@ import com.example.sales.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
 import java.util.List;
 
 @RestController
@@ -22,6 +23,12 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<Product>> getAllActiveProducts() {
+        List<Product> products = productService.getAllActiveProducts();
         return ResponseEntity.ok(products);
     }
 
@@ -49,4 +56,15 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<Product>> getPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        Page<Product> products = productService.getPaginatedProducts(page, size, search, sortBy, direction);
+        return ResponseEntity.ok(products);
+    }
 }

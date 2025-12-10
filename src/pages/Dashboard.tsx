@@ -9,19 +9,20 @@ import { LogOut, Package, ShoppingCart, BarChart3 } from 'lucide-react';
 type ActiveTab = 'products' | 'sales' | 'report';
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('products');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    () => (localStorage.getItem('activeTab') as ActiveTab) || 'products'
+  );
   const [username, setUsername] = useState('');
+  const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     const user = localStorage.getItem('username');
-
     if (!token) {
       navigate('/login');
       return;
     }
-
     setUsername(user || 'User');
   }, [navigate]);
 
@@ -31,16 +32,27 @@ export default function Dashboard() {
     navigate('/login');
   };
 
+  const handleTabChange = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    localStorage.setItem('activeTab', tab);
+  };
+
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
         <div className="header-content">
           <h1 className="logo">Dashboard</h1>
           <div className="header-right">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="global-search"
+            />
             <span className="username">Welcome, {username}</span>
             <button className="logout-button" onClick={handleLogout}>
-              <LogOut size={20} />
-              Logout
+              <LogOut size={20} /> Logout
             </button>
           </div>
         </div>
@@ -51,21 +63,21 @@ export default function Dashboard() {
           <div className="nav-group">
             <button
               className={`nav-item ${activeTab === 'products' ? 'active' : ''}`}
-              onClick={() => setActiveTab('products')}
+              onClick={() => handleTabChange('products')}
             >
               <Package size={20} />
               <span>Products</span>
             </button>
             <button
               className={`nav-item ${activeTab === 'sales' ? 'active' : ''}`}
-              onClick={() => setActiveTab('sales')}
+              onClick={() => handleTabChange('sales')}
             >
               <ShoppingCart size={20} />
               <span>Sales</span>
             </button>
             <button
               className={`nav-item ${activeTab === 'report' ? 'active' : ''}`}
-              onClick={() => setActiveTab('report')}
+              onClick={() => handleTabChange('report')}
             >
               <BarChart3 size={20} />
               <span>Sales Report</span>
@@ -74,8 +86,8 @@ export default function Dashboard() {
         </nav>
 
         <main className="main-content">
-          {activeTab === 'products' && <Products />}
-          {activeTab === 'sales' && <Sales />}
+          {activeTab === 'products' && <Products search={search} />}
+          {activeTab === 'sales' && <Sales search={search} />}
           {activeTab === 'report' && <SalesReport />}
         </main>
       </div>

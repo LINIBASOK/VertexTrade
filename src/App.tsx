@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Products from './components/Products';
+import Sales from './components/Sales';
 import './styles/globals.scss';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -15,7 +17,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+    
         <Route path="/login" element={<Login />} />
+
+       
         <Route
           path="/dashboard"
           element={
@@ -24,8 +30,29 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute>
+              <Products />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/sales"
+          element={
+            <ProtectedRoute>
+              <Sales />
+            </ProtectedRoute>
+          }
+        />
+
+       
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+        <Route path="*" element={<div>Page Not Found</div>} />
       </Routes>
     </BrowserRouter>
   );

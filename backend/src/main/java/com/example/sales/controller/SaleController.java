@@ -5,8 +5,11 @@ import com.example.sales.service.SaleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
 
 @RestController
 @RequestMapping("/api/sales")
@@ -32,9 +35,34 @@ public class SaleController {
     }
 
     @PostMapping
-    public ResponseEntity<Sale> createSale(@RequestBody Sale sale) {
-        Sale createdSale = saleService.createSale(sale);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdSale);
+    public ResponseEntity<?> createSale(@RequestBody Sale sale) {
+        try {
+            Sale createdSale = saleService.createSale(sale);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdSale);
+        } catch (IllegalArgumentException e) {
+         
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create sale");
+        }
     }
+@GetMapping("/paginated")
+public Map<String, Object> getPaginatedSales(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "asc") String direction,
+        @RequestParam(defaultValue = "") String search) {
+
+    Page<Sale> pagedResult = saleService.getPaginatedSales(page, size, sortBy, search, direction);
+
+    Map<String, Object> response = new HashMap<>();
+    
+     response.put("data", pagedResult.getContent()); 
+    response.put("total", pagedResult.getTotalElements());
+
+    return response;
+}
 
 }

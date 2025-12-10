@@ -1,0 +1,132 @@
+.datatable-container {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  margin-top: 1rem;
+  font-family: 'Inter', sans-serif;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+
+    thead {
+      background-color: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+
+      th {
+        padding: 10px 12px;
+        text-align: left;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #eee;
+        transition: background 0.2s;
+
+        &:hover {
+          background-color: #f0f4ff;
+        }
+
+        td {
+          padding: 8px 12px;
+          color: #333;
+        }
+      }
+
+      td[colspan] {
+        text-align: center;
+        font-style: italic;
+        color: #666;
+      }
+    }
+  }
+
+  .datatable-pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+
+    button {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      background-color: #2563eb;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:disabled {
+        background-color: #cbd5e1;
+        cursor: not-allowed;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: #1e40af;
+      }
+    }
+
+    span {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    select {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.85rem;
+      background-color: #fff;
+      cursor: pointer;
+    }
+  }
+
+  
+  @media (max-width: 768px) {
+    table, thead, tbody, tr, th, td {
+      display: block;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody tr {
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #eee;
+    }
+
+    tbody td {
+      padding: 8px;
+      text-align: right;
+      position: relative;
+
+      &::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 10px;
+        font-weight: 600;
+        text-align: left;
+        color: #333;
+      }
+    }
+
+    .datatable-pagination {
+      justify-content: center;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+    }
+  }
+}
