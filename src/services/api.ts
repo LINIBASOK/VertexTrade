@@ -55,7 +55,7 @@ export const saleService = {
     return res.data;
   },
 
-  add: async (sale: Sale): Promise<Sale> => {
+  add: async (sale: Partial<Sale>): Promise<Sale> => {
     const res = await axiosInstance.post(API_SALES, sale, { headers: getAuthHeaders() });
     return res.data;
   },
